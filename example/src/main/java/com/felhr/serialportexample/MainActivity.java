@@ -11,11 +11,14 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.felhr.utils.HexData;
 
 import java.lang.ref.WeakReference;
 import java.util.Set;
@@ -25,9 +28,11 @@ public class MainActivity extends AppCompatActivity {
     /*
      * Notifications from UsbService will be received here.
      */
+    private static final String TAG = "MainActivity";
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.e(TAG, "onReceive() called with: context = [" + context + "], intent = [" + intent.getAction() + "]");
             switch (intent.getAction()) {
                 case UsbService.ACTION_USB_PERMISSION_GRANTED: // USB PERMISSION GRANTED
                     Toast.makeText(context, "USB Ready", Toast.LENGTH_SHORT).show();
@@ -81,11 +86,23 @@ public class MainActivity extends AppCompatActivity {
                     String data = editText.getText().toString();
                     if (usbService != null) { // if UsbService was correctly binded, Send data
                         display.append(data);
-                        usbService.write(data.getBytes());
+                        usbService.write(HexData.stringTobytes(data));
                     }
                 }
             }
         });
+    }
+
+    public String convertStringToHex(String str) {
+
+        char[] chars = str.toCharArray();
+
+        StringBuffer hex = new StringBuffer();
+        for (int i = 0; i < chars.length; i++) {
+            hex.append(Integer.toHexString((int) chars[i]));
+        }
+
+        return hex.toString();
     }
 
     @Override
